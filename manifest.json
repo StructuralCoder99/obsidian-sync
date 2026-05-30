@@ -1,0 +1,11 @@
+{
+	"id": "unified-sync",
+	"name": "Unified Sync",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Sync Obsidian vault with Git or Firebase across all devices.",
+	"author": "Antigravity",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false
+}
