@@ -100,9 +100,7 @@ export default class UnifiedSyncPlugin extends Plugin {
 			} else if (this.settings.backendType === 'firebase') {
 				await syncWithFirebase(this);
 			}
-			if (source === 'manual' || source === 'command') {
-				new Notice('Sync completed successfully!');
-			}
+			new Notice(`Sync completed successfully! (${source})`);
 		} catch (error) {
 			console.error('[Unified Sync] Sync failed:', error);
 			new Notice('Sync failed. Check console for details.');
