@@ -206,10 +206,18 @@ export default class UnifiedSyncPlugin extends Plugin {
 				await plugins.disablePlugin(this.manifest.id);
 				await plugins.enablePlugin(this.manifest.id);
 			}, 1000);
-		} catch (error) {
+		} catch (error: any) {
 			console.error('[Unified Sync] Update check failed:', error);
 			if (manual) {
-				this.showNotice('Update check failed. Check console for details.', 'error');
+				let msg = 'Update check failed.';
+				if (error.status === 404) {
+					msg = 'No releases found on GitHub yet. Please publish a release first!';
+				} else if (error.status === 403) {
+					msg = 'GitHub API rate limit exceeded. Try again later.';
+				} else if (error.message) {
+					msg = `Update check failed: ${error.message}`;
+				}
+				this.showNotice(msg, 'error');
 			}
 		}
 	}
