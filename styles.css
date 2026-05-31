@@ -81,3 +81,19 @@ body.unified-sync-notices-bottom-right .notice-container {
 	top: auto !important;
 	left: auto !important;
 }
+
+body.unified-sync-notices-center .notice-container {
+	top: 50% !important;
+	left: 50% !important;
+	transform: translate(-50%, -50%) !important;
+	bottom: auto !important;
+	right: auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+
+body.unified-sync-notices-center .notice {
+	margin: 8px auto !important;
+}

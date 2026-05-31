@@ -18,7 +18,7 @@ export interface UnifiedSyncSettings {
 
 	// Notice Settings
 	noticeTheme: 'default' | 'unified-glass';
-	noticePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+	noticePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center';
 
 	// Auto-Update Settings
 	autoUpdate: boolean;
@@ -112,6 +112,7 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 				.addOption('top-left', 'Top Left')
 				.addOption('bottom-right', 'Bottom Right')
 				.addOption('bottom-left', 'Bottom Left')
+				.addOption('center', 'Screen Center')
 				.setValue(this.plugin.settings.noticePosition)
 				.onChange(async (value) => {
 					this.plugin.settings.noticePosition = value as any;

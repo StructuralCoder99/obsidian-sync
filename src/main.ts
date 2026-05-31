@@ -68,7 +68,8 @@ export default class UnifiedSyncPlugin extends Plugin {
 			'unified-sync-notices-top-right',
 			'unified-sync-notices-top-left',
 			'unified-sync-notices-bottom-right',
-			'unified-sync-notices-bottom-left'
+			'unified-sync-notices-bottom-left',
+			'unified-sync-notices-center'
 		);
 	}
 
@@ -128,7 +129,8 @@ export default class UnifiedSyncPlugin extends Plugin {
 			'unified-sync-notices-top-right',
 			'unified-sync-notices-top-left',
 			'unified-sync-notices-bottom-right',
-			'unified-sync-notices-bottom-left'
+			'unified-sync-notices-bottom-left',
+			'unified-sync-notices-center'
 		);
 		document.body.classList.add(`unified-sync-notices-${this.settings.noticePosition}`);
 	}
@@ -164,7 +166,19 @@ export default class UnifiedSyncPlugin extends Plugin {
 			
 			const release = response.json;
 			const remoteVersion = release.tag_name.replace(/^v/, '');
-			const localVersion = this.manifest.version;
+			
+			// Load the local version from disk to bypass Obsidian's cached manifest.version
+			const pluginDir = this.app.vault.configDir + '/plugins/' + this.manifest.id;
+			let localVersion = this.manifest.version;
+			try {
+				const localManifestRaw = await this.app.vault.adapter.read(`${pluginDir}/manifest.json`);
+				const localManifest = JSON.parse(localManifestRaw);
+				if (localManifest && localManifest.version) {
+					localVersion = localManifest.version;
+				}
+			} catch (e) {
+				console.warn('[Unified Sync] Could not read manifest.json from disk, falling back to cache:', e);
+			}
 			
 			if (remoteVersion === localVersion) {
 				if (manual) {
@@ -183,9 +197,6 @@ export default class UnifiedSyncPlugin extends Plugin {
 			if (!mainAsset || !manifestAsset) {
 				throw new Error('Release assets are missing main.js or manifest.json');
 			}
-			
-			const pluginDir = this.app.vault.configDir + '/plugins/' + this.manifest.id;
-			
 			// Download assets
 			const mainRes = await requestUrl({ url: mainAsset.browser_download_url });
 			const manifestRes = await requestUrl({ url: manifestAsset.browser_download_url });
