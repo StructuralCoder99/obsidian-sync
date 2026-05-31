@@ -16,6 +16,9 @@ export interface UnifiedSyncSettings {
 	firebaseProjectId: string;
 	firebaseAppId: string;
 
+	// Internal state to track Firebase sync and prevent duplication
+	firebaseSyncCache: Record<string, number>;
+
 	// Notice Settings
 	noticeTheme: 'default' | 'unified-glass';
 	noticePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center';
@@ -34,6 +37,7 @@ export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
 	firebaseApiKey: '',
 	firebaseProjectId: '',
 	firebaseAppId: '',
+	firebaseSyncCache: {},
 	noticeTheme: 'unified-glass',
 	noticePosition: 'top-right',
 	autoUpdate: true
