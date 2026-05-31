@@ -1,8 +1,83 @@
-/*
+/* Custom glassmorphic notifications styling for Unified Sync */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* Custom styled notice element */
+.notice.unified-sync-notice {
+	background: rgba(28, 28, 30, 0.75) !important;
+	backdrop-filter: blur(20px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 12px !important;
+	padding: 14px 20px !important;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+				0 1px 1px rgba(255, 255, 255, 0.1) inset !important;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+	font-size: 13.5px !important;
+	font-weight: 500 !important;
+	line-height: 1.4 !important;
+	color: #ffffff !important;
+	margin-bottom: 12px !important;
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+	opacity: 0.98 !important;
+	display: flex !important;
+	align-items: center !important;
+	animation: notice-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
 
-If your plugin does not need CSS, delete this file.
+/* Success notice theme (emerald green highlight) */
+.notice.unified-sync-notice-success {
+	border-left: 5px solid #10b981 !important;
+	background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(20, 20, 20, 0.8) 100%) !important;
+}
 
-*/
+/* Error notice theme (rose red highlight) */
+.notice.unified-sync-notice-error {
+	border-left: 5px solid #f43f5e !important;
+	background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(20, 20, 20, 0.8) 100%) !important;
+}
+
+/* Info notice theme (royal blue highlight) */
+.notice.unified-sync-notice-info {
+	border-left: 5px solid #3b82f6 !important;
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(20, 20, 20, 0.8) 100%) !important;
+}
+
+/* Slide in animation for notifications */
+@keyframes notice-slide-in {
+	from {
+		transform: translateY(15px) scale(0.96);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0) scale(1);
+		opacity: 0.98;
+	}
+}
+
+/* Custom notice positioning override */
+body.unified-sync-notices-top-left .notice-container {
+	top: 24px !important;
+	left: 24px !important;
+	bottom: auto !important;
+	right: auto !important;
+}
+
+body.unified-sync-notices-top-right .notice-container {
+	top: 24px !important;
+	right: 24px !important;
+	bottom: auto !important;
+	left: auto !important;
+}
+
+body.unified-sync-notices-bottom-left .notice-container {
+	bottom: 24px !important;
+	left: 24px !important;
+	top: auto !important;
+	right: auto !important;
+}
+
+body.unified-sync-notices-bottom-right .notice-container {
+	bottom: 24px !important;
+	right: 24px !important;
+	top: auto !important;
+	left: auto !important;
+}

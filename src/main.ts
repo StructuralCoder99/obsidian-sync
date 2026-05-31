@@ -18,10 +18,11 @@ export default class UnifiedSyncPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+		this.applyNoticePosition();
 
 		// Add Ribbon Icon for Manual Sync
 		this.addRibbonIcon('refresh-cw', 'Sync Vault', async (evt: MouseEvent) => {
-			new Notice('Starting manual sync...');
+			this.showNotice('Starting manual sync...', 'info');
 			await this.triggerSync('manual');
 		});
 
@@ -30,7 +31,7 @@ export default class UnifiedSyncPlugin extends Plugin {
 			id: 'trigger-sync',
 			name: 'Sync Vault Now',
 			callback: async () => {
-				new Notice('Starting sync...');
+				this.showNotice('Starting sync...', 'info');
 				await this.triggerSync('command');
 			},
 		});
@@ -56,6 +57,13 @@ export default class UnifiedSyncPlugin extends Plugin {
 		if (this.syncIntervalId !== null) {
 			window.clearInterval(this.syncIntervalId);
 		}
+		// Clean up notice position classes on unload
+		document.body.classList.remove(
+			'unified-sync-notices-top-right',
+			'unified-sync-notices-top-left',
+			'unified-sync-notices-bottom-right',
+			'unified-sync-notices-bottom-left'
+		);
 	}
 
 	async loadSettings() {
@@ -100,12 +108,30 @@ export default class UnifiedSyncPlugin extends Plugin {
 			} else if (this.settings.backendType === 'firebase') {
 				await syncWithFirebase(this);
 			}
-			new Notice(`Sync completed successfully! (${source})`);
+			this.showNotice(`Sync completed successfully! (${source})`, 'success');
 		} catch (error) {
 			console.error('[Unified Sync] Sync failed:', error);
-			new Notice('Sync failed. Check console for details.');
+			this.showNotice('Sync failed. Check console for details.', 'error');
 		} finally {
 			this.isSyncing = false;
+		}
+	}
+
+	public applyNoticePosition() {
+		document.body.classList.remove(
+			'unified-sync-notices-top-right',
+			'unified-sync-notices-top-left',
+			'unified-sync-notices-bottom-right',
+			'unified-sync-notices-bottom-left'
+		);
+		document.body.classList.add(`unified-sync-notices-${this.settings.noticePosition}`);
+	}
+
+	public showNotice(message: string, type: 'info' | 'success' | 'error' = 'info') {
+		const notice = new Notice(message);
+		if (this.settings.noticeTheme === 'unified-glass') {
+			notice.noticeEl.classList.add('unified-sync-notice');
+			notice.noticeEl.classList.add(`unified-sync-notice-${type}`);
 		}
 	}
 }

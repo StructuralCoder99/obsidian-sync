@@ -15,6 +15,10 @@ export interface UnifiedSyncSettings {
 	firebaseApiKey: string;
 	firebaseProjectId: string;
 	firebaseAppId: string;
+
+	// Notice Settings
+	noticeTheme: 'default' | 'unified-glass';
+	noticePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 }
 
 export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
@@ -26,7 +30,9 @@ export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
 	gitToken: '',
 	firebaseApiKey: '',
 	firebaseProjectId: '',
-	firebaseAppId: ''
+	firebaseAppId: '',
+	noticeTheme: 'unified-glass',
+	noticePosition: 'top-right'
 }
 
 export class UnifiedSyncSettingTab extends PluginSettingTab {
@@ -78,6 +84,35 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.syncOnSave = value;
 					await this.plugin.saveSettings();
+				}));
+
+		containerEl.createEl('h3', {text: 'Notification Settings'});
+
+		new Setting(containerEl)
+			.setName('Notice Theme')
+			.setDesc('Customize the look and feel of sync notifications.')
+			.addDropdown(drop => drop
+				.addOption('default', 'Default Obsidian')
+				.addOption('unified-glass', 'Unified Sync Glassmorphism')
+				.setValue(this.plugin.settings.noticeTheme)
+				.onChange(async (value) => {
+					this.plugin.settings.noticeTheme = value as 'default' | 'unified-glass';
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Notice Position')
+			.setDesc('Choose where notifications should appear in Obsidian.')
+			.addDropdown(drop => drop
+				.addOption('top-right', 'Top Right')
+				.addOption('top-left', 'Top Left')
+				.addOption('bottom-right', 'Bottom Right')
+				.addOption('bottom-left', 'Bottom Left')
+				.setValue(this.plugin.settings.noticePosition)
+				.onChange(async (value) => {
+					this.plugin.settings.noticePosition = value as any;
+					await this.plugin.saveSettings();
+					this.plugin.applyNoticePosition();
 				}));
 
 		if (this.plugin.settings.backendType === 'git') {

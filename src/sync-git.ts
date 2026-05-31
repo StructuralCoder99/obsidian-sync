@@ -24,7 +24,7 @@ export async function syncWithGit(plugin: UnifiedSyncPlugin) {
 		}
 
 		if (!plugin.settings.gitRepoUrl) {
-			new Notice('Git Repo URL is not configured in settings.');
+			plugin.showNotice('Git Repo URL is not configured in settings.', 'error');
 			return;
 		}
 
