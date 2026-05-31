@@ -1,7 +1,8 @@
 import {
 	Notice,
 	Plugin,
-	TAbstractFile
+	TAbstractFile,
+	requestUrl
 } from 'obsidian';
 import {
 	DEFAULT_SETTINGS,
@@ -19,6 +20,11 @@ export default class UnifiedSyncPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.applyNoticePosition();
+
+		// Trigger automatic update check on startup after a 2-second delay
+		if (this.settings.autoUpdate) {
+			setTimeout(() => this.checkForUpdates(), 2000);
+		}
 
 		// Add Ribbon Icon for Manual Sync
 		this.addRibbonIcon('refresh-cw', 'Sync Vault', async (evt: MouseEvent) => {
@@ -132,6 +138,79 @@ export default class UnifiedSyncPlugin extends Plugin {
 		if (this.settings.noticeTheme === 'unified-glass') {
 			notice.noticeEl.classList.add('unified-sync-notice');
 			notice.noticeEl.classList.add(`unified-sync-notice-${type}`);
+		}
+	}
+
+	public async checkForUpdates(manual = false) {
+		try {
+			if (manual) {
+				this.showNotice('Checking for updates...', 'info');
+			}
+			
+			const repo = 'StructuralCoder99/obsidian-sync';
+			const url = `https://api.github.com/repos/${repo}/releases/latest`;
+			
+			const response = await requestUrl({
+				url: url,
+				headers: {
+					'Accept': 'application/vnd.github.v3+json',
+					'User-Agent': 'Obsidian-Unified-Sync'
+				}
+			});
+			
+			if (response.status !== 200) {
+				throw new Error(`GitHub API returned status ${response.status}`);
+			}
+			
+			const release = response.json;
+			const remoteVersion = release.tag_name.replace(/^v/, '');
+			const localVersion = this.manifest.version;
+			
+			if (remoteVersion === localVersion) {
+				if (manual) {
+					this.showNotice(`Plugin is up to date (v${localVersion}).`, 'success');
+				}
+				return;
+			}
+			
+			this.showNotice(`New version v${remoteVersion} available! Updating...`, 'info');
+			
+			const assets = release.assets;
+			const mainAsset = assets.find((a: any) => a.name === 'main.js');
+			const manifestAsset = assets.find((a: any) => a.name === 'manifest.json');
+			const stylesAsset = assets.find((a: any) => a.name === 'styles.css');
+			
+			if (!mainAsset || !manifestAsset) {
+				throw new Error('Release assets are missing main.js or manifest.json');
+			}
+			
+			const pluginDir = this.app.vault.configDir + '/plugins/' + this.manifest.id;
+			
+			// Download assets
+			const mainRes = await requestUrl({ url: mainAsset.browser_download_url });
+			const manifestRes = await requestUrl({ url: manifestAsset.browser_download_url });
+			
+			await this.app.vault.adapter.write(`${pluginDir}/main.js`, mainRes.text);
+			await this.app.vault.adapter.write(`${pluginDir}/manifest.json`, manifestRes.text);
+			
+			if (stylesAsset) {
+				const stylesRes = await requestUrl({ url: stylesAsset.browser_download_url });
+				await this.app.vault.adapter.write(`${pluginDir}/styles.css`, stylesRes.text);
+			}
+			
+			this.showNotice(`Successfully updated to v${remoteVersion}! Reloading...`, 'success');
+			
+			// Programmatically reload the plugin after 1 second
+			setTimeout(async () => {
+				const plugins = (this.app as any).plugins;
+				await plugins.disablePlugin(this.manifest.id);
+				await plugins.enablePlugin(this.manifest.id);
+			}, 1000);
+		} catch (error) {
+			console.error('[Unified Sync] Update check failed:', error);
+			if (manual) {
+				this.showNotice('Update check failed. Check console for details.', 'error');
+			}
 		}
 	}
 }

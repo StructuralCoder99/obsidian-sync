@@ -19,6 +19,9 @@ export interface UnifiedSyncSettings {
 	// Notice Settings
 	noticeTheme: 'default' | 'unified-glass';
 	noticePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
+	// Auto-Update Settings
+	autoUpdate: boolean;
 }
 
 export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
@@ -32,7 +35,8 @@ export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
 	firebaseProjectId: '',
 	firebaseAppId: '',
 	noticeTheme: 'unified-glass',
-	noticePosition: 'top-right'
+	noticePosition: 'top-right',
+	autoUpdate: true
 }
 
 export class UnifiedSyncSettingTab extends PluginSettingTab {
@@ -113,6 +117,28 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 					this.plugin.settings.noticePosition = value as any;
 					await this.plugin.saveSettings();
 					this.plugin.applyNoticePosition();
+				}));
+
+		containerEl.createEl('h3', {text: 'Plugin Updates'});
+
+		new Setting(containerEl)
+			.setName('Auto-Check for Updates')
+			.setDesc('Check for updates automatically on startup.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoUpdate)
+				.onChange(async (value) => {
+					this.plugin.settings.autoUpdate = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Check for Updates')
+			.setDesc('Check for newer releases on GitHub and update the plugin.')
+			.addButton(button => button
+				.setButtonText('Check Now')
+				.setCta()
+				.onClick(async () => {
+					await this.plugin.checkForUpdates(true);
 				}));
 
 		if (this.plugin.settings.backendType === 'git') {
