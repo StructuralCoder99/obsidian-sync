@@ -1,20 +1,12 @@
 /* Custom glassmorphic notifications styling for Unified Sync */
 
-/* Custom styled notice element */
-.notice.unified-sync-notice {
-	background: rgba(28, 28, 30, 0.75) !important;
-	backdrop-filter: blur(20px) saturate(180%) !important;
-	-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+body .notice-container .notice.unified-sync-notice {
 	border-radius: 12px !important;
 	padding: 14px 20px !important;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
-				0 1px 1px rgba(255, 255, 255, 0.1) inset !important;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
 	font-size: 13.5px !important;
 	font-weight: 500 !important;
 	line-height: 1.4 !important;
-	color: #ffffff !important;
 	margin-bottom: 12px !important;
 	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
 	opacity: 0.98 !important;
@@ -23,22 +15,65 @@
 	animation: notice-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
+/* Dark theme overrides */
+.theme-dark .notice-container .notice.unified-sync-notice {
+	background: rgba(28, 28, 30, 0.85) !important;
+	backdrop-filter: blur(20px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.12) !important;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 
+				0 1px 1px rgba(255, 255, 255, 0.15) inset !important;
+	color: #ffffff !important;
+}
+
+/* Light theme overrides */
+.theme-light .notice-container .notice.unified-sync-notice {
+	background: rgba(255, 255, 255, 0.85) !important;
+	backdrop-filter: blur(20px) saturate(180%) !important;
+	-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+	border: 1px solid rgba(0, 0, 0, 0.12) !important;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 
+				0 1px 1px rgba(255, 255, 255, 0.6) inset !important;
+	color: #1a1a1a !important;
+}
+
 /* Success notice theme (emerald green highlight) */
-.notice.unified-sync-notice-success {
+body .notice-container .notice.unified-sync-notice-success {
 	border-left: 5px solid #10b981 !important;
-	background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(20, 20, 20, 0.8) 100%) !important;
+}
+.theme-dark .notice-container .notice.unified-sync-notice-success {
+	background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(28, 28, 30, 0.9) 100%) !important;
+	box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15), 0 1px 1px rgba(255, 255, 255, 0.15) inset !important;
+}
+.theme-light .notice-container .notice.unified-sync-notice-success {
+	background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+	box-shadow: 0 10px 30px rgba(16, 185, 129, 0.12), 0 1px 1px rgba(255, 255, 255, 0.6) inset !important;
 }
 
 /* Error notice theme (rose red highlight) */
-.notice.unified-sync-notice-error {
+body .notice-container .notice.unified-sync-notice-error {
 	border-left: 5px solid #f43f5e !important;
-	background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(20, 20, 20, 0.8) 100%) !important;
+}
+.theme-dark .notice-container .notice.unified-sync-notice-error {
+	background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(28, 28, 30, 0.9) 100%) !important;
+	box-shadow: 0 10px 30px rgba(244, 63, 94, 0.15), 0 1px 1px rgba(255, 255, 255, 0.15) inset !important;
+}
+.theme-light .notice-container .notice.unified-sync-notice-error {
+	background: linear-gradient(135deg, rgba(244, 63, 94, 0.18) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+	box-shadow: 0 10px 30px rgba(244, 63, 94, 0.12), 0 1px 1px rgba(255, 255, 255, 0.6) inset !important;
 }
 
 /* Info notice theme (royal blue highlight) */
-.notice.unified-sync-notice-info {
+body .notice-container .notice.unified-sync-notice-info {
 	border-left: 5px solid #3b82f6 !important;
-	background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(20, 20, 20, 0.8) 100%) !important;
+}
+.theme-dark .notice-container .notice.unified-sync-notice-info {
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(28, 28, 30, 0.9) 100%) !important;
+	box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15), 0 1px 1px rgba(255, 255, 255, 0.15) inset !important;
+}
+.theme-light .notice-container .notice.unified-sync-notice-info {
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(255, 255, 255, 0.9) 100%) !important;
+	box-shadow: 0 10px 30px rgba(59, 130, 246, 0.12), 0 1px 1px rgba(255, 255, 255, 0.6) inset !important;
 }
 
 /* Slide in animation for notifications */
@@ -68,6 +103,17 @@ body.unified-sync-notices-top-right .notice-container {
 	left: auto !important;
 }
 
+body.unified-sync-notices-top-center .notice-container {
+	top: 24px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	bottom: auto !important;
+	right: auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+}
+
 body.unified-sync-notices-bottom-left .notice-container {
 	bottom: 24px !important;
 	left: 24px !important;
@@ -82,6 +128,17 @@ body.unified-sync-notices-bottom-right .notice-container {
 	left: auto !important;
 }
 
+body.unified-sync-notices-bottom-center .notice-container {
+	bottom: 24px !important;
+	left: 50% !important;
+	transform: translateX(-50%) !important;
+	top: auto !important;
+	right: auto !important;
+	display: flex !important;
+	flex-direction: column !important;
+	align-items: center !important;
+}
+
 body.unified-sync-notices-center .notice-container {
 	top: 50% !important;
 	left: 50% !important;
@@ -94,6 +151,8 @@ body.unified-sync-notices-center .notice-container {
 	justify-content: center !important;
 }
 
-body.unified-sync-notices-center .notice {
+body.unified-sync-notices-center .notice,
+body.unified-sync-notices-top-center .notice,
+body.unified-sync-notices-bottom-center .notice {
 	margin: 8px auto !important;
 }

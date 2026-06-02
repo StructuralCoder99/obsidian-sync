@@ -67,8 +67,10 @@ export default class UnifiedSyncPlugin extends Plugin {
 		document.body.classList.remove(
 			'unified-sync-notices-top-right',
 			'unified-sync-notices-top-left',
+			'unified-sync-notices-top-center',
 			'unified-sync-notices-bottom-right',
 			'unified-sync-notices-bottom-left',
+			'unified-sync-notices-bottom-center',
 			'unified-sync-notices-center'
 		);
 	}
@@ -115,7 +117,9 @@ export default class UnifiedSyncPlugin extends Plugin {
 			} else if (this.settings.backendType === 'firebase') {
 				await syncWithFirebase(this);
 			}
-			this.showNotice(`Sync completed successfully! (${source})`, 'success');
+			if (source === 'manual' || source === 'command' || (source === 'on-save' && this.settings.showOnSaveNotices)) {
+				this.showNotice('Sync completed successfully!', 'success');
+			}
 		} catch (error) {
 			console.error('[Unified Sync] Sync failed:', error);
 			this.showNotice('Sync failed. Check console for details.', 'error');
@@ -128,8 +132,10 @@ export default class UnifiedSyncPlugin extends Plugin {
 		document.body.classList.remove(
 			'unified-sync-notices-top-right',
 			'unified-sync-notices-top-left',
+			'unified-sync-notices-top-center',
 			'unified-sync-notices-bottom-right',
 			'unified-sync-notices-bottom-left',
+			'unified-sync-notices-bottom-center',
 			'unified-sync-notices-center'
 		);
 		document.body.classList.add(`unified-sync-notices-${this.settings.noticePosition}`);

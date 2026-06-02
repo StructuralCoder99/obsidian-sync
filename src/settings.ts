@@ -21,7 +21,8 @@ export interface UnifiedSyncSettings {
 
 	// Notice Settings
 	noticeTheme: 'default' | 'unified-glass';
-	noticePosition: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center';
+	noticePosition: 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-center' | 'center';
+	showOnSaveNotices: boolean;
 
 	// Auto-Update Settings
 	autoUpdate: boolean;
@@ -40,6 +41,7 @@ export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
 	firebaseSyncCache: {},
 	noticeTheme: 'unified-glass',
 	noticePosition: 'top-right',
+	showOnSaveNotices: false,
 	autoUpdate: true
 }
 
@@ -92,7 +94,20 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.syncOnSave = value;
 					await this.plugin.saveSettings();
+					this.display(); // Refresh settings tab to show/hide conditional options
 				}));
+
+		if (this.plugin.settings.syncOnSave) {
+			new Setting(containerEl)
+				.setName('Show notifications for on-save sync')
+				.setDesc('Show notifications when on-save sync completes successfully. Failures will always show alerts.')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.showOnSaveNotices)
+					.onChange(async (value) => {
+						this.plugin.settings.showOnSaveNotices = value;
+						await this.plugin.saveSettings();
+					}));
+		}
 
 		containerEl.createEl('h3', {text: 'Notification Settings'});
 
@@ -112,14 +127,16 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 			.setName('Notice Position')
 			.setDesc('Choose where notifications should appear in Obsidian.')
 			.addDropdown(drop => drop
-				.addOption('top-right', 'Top Right')
-				.addOption('top-left', 'Top Left')
-				.addOption('bottom-right', 'Bottom Right')
-				.addOption('bottom-left', 'Bottom Left')
-				.addOption('center', 'Screen Center')
+				.addOption('top-right', 'Top right')
+				.addOption('top-left', 'Top left')
+				.addOption('top-center', 'Top center')
+				.addOption('bottom-right', 'Bottom right')
+				.addOption('bottom-left', 'Bottom left')
+				.addOption('bottom-center', 'Bottom center')
+				.addOption('center', 'Screen center')
 				.setValue(this.plugin.settings.noticePosition)
 				.onChange(async (value) => {
-					this.plugin.settings.noticePosition = value as any;
+					this.plugin.settings.noticePosition = value as UnifiedSyncSettings['noticePosition'];
 					await this.plugin.saveSettings();
 					this.plugin.applyNoticePosition();
 				}));
