@@ -168,8 +168,39 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 				}));
 
 		if (this.plugin.settings.backendType === 'git') {
-			containerEl.createEl('h3', {text: 'Git Settings'});
+			containerEl.createEl('h3', {text: 'Git settings'});
 			
+			// Check if we can autofill Git config from localStorage
+			const cachedGitConfigStr = window.localStorage.getItem('unified-sync-git-config');
+			if (cachedGitConfigStr && (!this.plugin.settings.gitRepoUrl || !this.plugin.settings.gitUsername || !this.plugin.settings.gitToken)) {
+				try {
+					interface CachedGitConfig {
+						repoUrl?: string;
+						username?: string;
+						token?: string;
+					}
+					const cachedGitConfig = JSON.parse(cachedGitConfigStr) as CachedGitConfig;
+					if (cachedGitConfig.repoUrl && cachedGitConfig.username && cachedGitConfig.token) {
+						new Setting(containerEl)
+							.setName('Autofill Git configuration')
+							.setDesc('Saved Git credentials from another vault were found on this device.')
+							.addButton(button => button
+								.setButtonText('Autofill now')
+								.setCta()
+								.onClick(async () => {
+									this.plugin.settings.gitRepoUrl = cachedGitConfig.repoUrl || '';
+									this.plugin.settings.gitUsername = cachedGitConfig.username || '';
+									this.plugin.settings.gitToken = cachedGitConfig.token || '';
+									await this.plugin.saveSettings();
+									this.plugin.showNotice('Autofilled Git credentials!', 'success');
+									this.display();
+								}));
+					}
+				} catch (e) {
+					console.error('[Unified Sync] Failed to parse cached Git config:', e);
+				}
+			}
+
 			new Setting(containerEl)
 				.setName('Repository URL')
 				.setDesc('The remote Git repository URL (HTTPS).')
@@ -179,6 +210,7 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.gitRepoUrl = value;
 						await this.plugin.saveSettings();
+						this.updateLocalStorageGitConfig();
 					}));
 			
 			new Setting(containerEl)
@@ -188,38 +220,122 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.gitUsername = value;
 						await this.plugin.saveSettings();
+						this.updateLocalStorageGitConfig();
 					}));
 			
 			new Setting(containerEl)
-				.setName('Personal Access Token (PAT)')
+				.setName('Personal access token (PAT)')
 				.setDesc('Used for HTTPS authentication.')
 				.addText(text => text
 					.setValue(this.plugin.settings.gitToken)
 					.onChange(async (value) => {
 						this.plugin.settings.gitToken = value;
 						await this.plugin.saveSettings();
+						this.updateLocalStorageGitConfig();
 					}));
 
 			new Setting(containerEl)
 				.setName('Git branch')
-				.setDesc('Branch to use for sync (e.g. main, vault-work, device-a).')
+				.setDesc('Branch to use for sync (e.g. Main, vault-work, device-a).')
 				.addText(text => text
-					.setPlaceholder('main')
+					.setPlaceholder('Main')
 					.setValue(this.plugin.settings.gitBranch || 'main')
 					.onChange(async (value) => {
 						this.plugin.settings.gitBranch = value || 'main';
 						await this.plugin.saveSettings();
 					}));
+
+			new Setting(containerEl)
+				.setName('Share Git configuration')
+				.setDesc('Export or import Git credentials via the clipboard.')
+				.addButton(button => button
+					.setButtonText('Export')
+					.onClick(async () => {
+						const config = {
+							repoUrl: this.plugin.settings.gitRepoUrl,
+							username: this.plugin.settings.gitUsername,
+							token: this.plugin.settings.gitToken,
+						};
+						if (!config.repoUrl || !config.username || !config.token) {
+							this.plugin.showNotice('Git credentials are not fully configured to export.', 'error');
+							return;
+						}
+						const encoded = btoa(JSON.stringify(config));
+						await navigator.clipboard.writeText(encoded);
+						this.plugin.showNotice('Git configuration copied to clipboard!', 'success');
+					}))
+				.addButton(button => button
+					.setButtonText('Import')
+					.onClick(async () => {
+						try {
+							const text = await navigator.clipboard.readText();
+							if (!text) {
+								this.plugin.showNotice('Clipboard is empty.', 'error');
+								return;
+							}
+							interface ImportGitConfig {
+								repoUrl?: string;
+								username?: string;
+								token?: string;
+							}
+							const decoded = JSON.parse(atob(text.trim())) as ImportGitConfig;
+							if (decoded.repoUrl && decoded.username && decoded.token) {
+								this.plugin.settings.gitRepoUrl = decoded.repoUrl;
+								this.plugin.settings.gitUsername = decoded.username;
+								this.plugin.settings.gitToken = decoded.token;
+								await this.plugin.saveSettings();
+								this.updateLocalStorageGitConfig();
+								this.plugin.showNotice('Git configuration imported successfully!', 'success');
+								this.display();
+							} else {
+								throw new Error('Invalid configuration.');
+							}
+						} catch (e) {
+							this.plugin.showNotice('Failed to import configuration from clipboard.', 'error');
+						}
+					}));
 		} else {
-			containerEl.createEl('h3', {text: 'Firebase Settings'});
+			containerEl.createEl('h3', {text: 'Firebase settings'});
+
+			// Check if we can autofill Firebase config from localStorage
+			const cachedFirebaseConfigStr = window.localStorage.getItem('unified-sync-firebase-config');
+			if (cachedFirebaseConfigStr && (!this.plugin.settings.firebaseApiKey || !this.plugin.settings.firebaseProjectId || !this.plugin.settings.firebaseAppId)) {
+				try {
+					interface CachedFirebaseConfig {
+						apiKey?: string;
+						projectId?: string;
+						appId?: string;
+					}
+					const cachedFirebaseConfig = JSON.parse(cachedFirebaseConfigStr) as CachedFirebaseConfig;
+					if (cachedFirebaseConfig.apiKey && cachedFirebaseConfig.projectId && cachedFirebaseConfig.appId) {
+						new Setting(containerEl)
+							.setName('Autofill firebase configuration')
+							.setDesc('Saved firebase credentials from another vault were found on this device.')
+							.addButton(button => button
+								.setButtonText('Autofill now')
+								.setCta()
+								.onClick(async () => {
+									this.plugin.settings.firebaseApiKey = cachedFirebaseConfig.apiKey || '';
+									this.plugin.settings.firebaseProjectId = cachedFirebaseConfig.projectId || '';
+									this.plugin.settings.firebaseAppId = cachedFirebaseConfig.appId || '';
+									await this.plugin.saveSettings();
+									this.plugin.showNotice('Autofilled Firebase credentials!', 'success');
+									this.display();
+								}));
+					}
+				} catch (e) {
+					console.error('[Unified Sync] Failed to parse cached Firebase config:', e);
+				}
+			}
 			
 			new Setting(containerEl)
-				.setName('Firebase API Key')
+				.setName('Firebase API key')
 				.addText(text => text
 					.setValue(this.plugin.settings.firebaseApiKey)
 					.onChange(async (value) => {
 						this.plugin.settings.firebaseApiKey = value;
 						await this.plugin.saveSettings();
+						this.updateLocalStorageFirebaseConfig();
 					}));
 					
 			new Setting(containerEl)
@@ -229,6 +345,7 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.firebaseProjectId = value;
 						await this.plugin.saveSettings();
+						this.updateLocalStorageFirebaseConfig();
 					}));
 					
 			new Setting(containerEl)
@@ -238,18 +355,91 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.firebaseAppId = value;
 						await this.plugin.saveSettings();
+						this.updateLocalStorageFirebaseConfig();
 					}));
 
 			new Setting(containerEl)
 				.setName('Firebase collection')
-				.setDesc('Firestore collection name for this vault (e.g. vault, personal-vault).')
+				.setDesc('Firestore collection name for this vault (e.g. Vault, personal-vault).')
 				.addText(text => text
-					.setPlaceholder('vault')
+					.setPlaceholder('Vault')
 					.setValue(this.plugin.settings.firebaseCollection || 'vault')
 					.onChange(async (value) => {
 						this.plugin.settings.firebaseCollection = value || 'vault';
 						await this.plugin.saveSettings();
 					}));
+
+			new Setting(containerEl)
+				.setName('Share firebase configuration')
+				.setDesc('Export or import firebase credentials via the clipboard.')
+				.addButton(button => button
+					.setButtonText('Export')
+					.onClick(async () => {
+						const config = {
+							apiKey: this.plugin.settings.firebaseApiKey,
+							projectId: this.plugin.settings.firebaseProjectId,
+							appId: this.plugin.settings.firebaseAppId,
+						};
+						if (!config.apiKey || !config.projectId || !config.appId) {
+							this.plugin.showNotice('Firebase credentials are not fully configured to export.', 'error');
+							return;
+						}
+						const encoded = btoa(JSON.stringify(config));
+						await navigator.clipboard.writeText(encoded);
+						this.plugin.showNotice('Firebase configuration copied to clipboard!', 'success');
+					}))
+				.addButton(button => button
+					.setButtonText('Import')
+					.onClick(async () => {
+						try {
+							const text = await navigator.clipboard.readText();
+							if (!text) {
+								this.plugin.showNotice('Clipboard is empty.', 'error');
+								return;
+							}
+							interface ImportFirebaseConfig {
+								apiKey?: string;
+								projectId?: string;
+								appId?: string;
+							}
+							const decoded = JSON.parse(atob(text.trim())) as ImportFirebaseConfig;
+							if (decoded.apiKey && decoded.projectId && decoded.appId) {
+								this.plugin.settings.firebaseApiKey = decoded.apiKey;
+								this.plugin.settings.firebaseProjectId = decoded.projectId;
+								this.plugin.settings.firebaseAppId = decoded.appId;
+								await this.plugin.saveSettings();
+								this.updateLocalStorageFirebaseConfig();
+								this.plugin.showNotice('Firebase configuration imported successfully!', 'success');
+								this.display();
+							} else {
+								throw new Error('Invalid configuration.');
+							}
+						} catch (e) {
+							this.plugin.showNotice('Failed to import configuration from clipboard.', 'error');
+						}
+					}));
+		}
+	}
+
+	updateLocalStorageFirebaseConfig() {
+		const { firebaseApiKey, firebaseProjectId, firebaseAppId } = this.plugin.settings;
+		if (firebaseApiKey && firebaseProjectId && firebaseAppId) {
+			window.localStorage.setItem('unified-sync-firebase-config', JSON.stringify({
+				apiKey: firebaseApiKey,
+				projectId: firebaseProjectId,
+				appId: firebaseAppId
+			}));
+		}
+	}
+
+	updateLocalStorageGitConfig() {
+		const { gitRepoUrl, gitUsername, gitToken } = this.plugin.settings;
+		if (gitRepoUrl && gitUsername && gitToken) {
+			window.localStorage.setItem('unified-sync-git-config', JSON.stringify({
+				repoUrl: gitRepoUrl,
+				username: gitUsername,
+				token: gitToken
+			}));
 		}
 	}
 }
