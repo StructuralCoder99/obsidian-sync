@@ -10,11 +10,13 @@ export interface UnifiedSyncSettings {
 	gitRepoUrl: string;
 	gitUsername: string;
 	gitToken: string;
+	gitBranch: string;
 
 	// Firebase Settings
 	firebaseApiKey: string;
 	firebaseProjectId: string;
 	firebaseAppId: string;
+	firebaseCollection: string;
 
 	// Internal state to track Firebase sync and prevent duplication
 	firebaseSyncCache: Record<string, number>;
@@ -35,9 +37,11 @@ export const DEFAULT_SETTINGS: UnifiedSyncSettings = {
 	gitRepoUrl: '',
 	gitUsername: '',
 	gitToken: '',
+	gitBranch: 'main',
 	firebaseApiKey: '',
 	firebaseProjectId: '',
 	firebaseAppId: '',
+	firebaseCollection: 'vault',
 	firebaseSyncCache: {},
 	noticeTheme: 'unified-glass',
 	noticePosition: 'top-right',
@@ -195,6 +199,17 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 						this.plugin.settings.gitToken = value;
 						await this.plugin.saveSettings();
 					}));
+
+			new Setting(containerEl)
+				.setName('Git branch')
+				.setDesc('Branch to use for sync (e.g. main, vault-work, device-a).')
+				.addText(text => text
+					.setPlaceholder('main')
+					.setValue(this.plugin.settings.gitBranch || 'main')
+					.onChange(async (value) => {
+						this.plugin.settings.gitBranch = value || 'main';
+						await this.plugin.saveSettings();
+					}));
 		} else {
 			containerEl.createEl('h3', {text: 'Firebase Settings'});
 			
@@ -222,6 +237,17 @@ export class UnifiedSyncSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.firebaseAppId)
 					.onChange(async (value) => {
 						this.plugin.settings.firebaseAppId = value;
+						await this.plugin.saveSettings();
+					}));
+
+			new Setting(containerEl)
+				.setName('Firebase collection')
+				.setDesc('Firestore collection name for this vault (e.g. vault, personal-vault).')
+				.addText(text => text
+					.setPlaceholder('vault')
+					.setValue(this.plugin.settings.firebaseCollection || 'vault')
+					.onChange(async (value) => {
+						this.plugin.settings.firebaseCollection = value || 'vault';
 						await this.plugin.saveSettings();
 					}));
 		}

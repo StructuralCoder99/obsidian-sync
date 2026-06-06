@@ -7,7 +7,8 @@ let firebaseApp: any = null;
 let db: any = null;
 
 export async function syncWithFirebase(plugin: UnifiedSyncPlugin) {
-	const { firebaseApiKey, firebaseProjectId, firebaseAppId, firebaseSyncCache } = plugin.settings;
+	const { firebaseApiKey, firebaseProjectId, firebaseAppId, firebaseCollection, firebaseSyncCache } = plugin.settings;
+	const collectionName = firebaseCollection || 'vault';
 	
 	if (!firebaseApiKey || !firebaseProjectId || !firebaseAppId) {
 		throw new Error('Firebase is not fully configured in settings.');
@@ -30,7 +31,7 @@ export async function syncWithFirebase(plugin: UnifiedSyncPlugin) {
 	const localFilePaths = localFiles.map(f => f.path);
 
 	// 1. Fetch all remote files to compare
-	const vaultSnapshot = await getDocs(collection(db, 'vault'));
+	const vaultSnapshot = await getDocs(collection(db, collectionName));
 	const remoteFilesMap = new Map<string, any>();
 	for (const docSnap of vaultSnapshot.docs) {
 		const data = docSnap.data();
@@ -41,7 +42,7 @@ export async function syncWithFirebase(plugin: UnifiedSyncPlugin) {
 	for (const cachedPath of Object.keys(firebaseSyncCache)) {
 		if (!localFilePaths.includes(cachedPath)) {
 			console.log(`[Unified Sync] Marking ${cachedPath} as deleted in Firebase (tombstone)...`);
-			const docRef = doc(db, 'vault', cachedPath.replace(/\//g, '_-_'));
+			const docRef = doc(db, collectionName, cachedPath.replace(/\//g, '_-_'));
 			const deleteTimestamp = Date.now();
 			await setDoc(docRef, {
 				path: cachedPath,
@@ -74,7 +75,7 @@ export async function syncWithFirebase(plugin: UnifiedSyncPlugin) {
 					// We edited it locally after it was deleted remotely -> Resurrect
 					console.log(`[Unified Sync] Resurrecting ${file.path} to Firebase...`);
 					const content = await vault.cachedRead(file);
-					const docRef = doc(db, 'vault', file.path.replace(/\//g, '_-_'));
+					const docRef = doc(db, collectionName, file.path.replace(/\//g, '_-_'));
 					await setDoc(docRef, {
 						path: file.path,
 						content: content,
@@ -89,7 +90,7 @@ export async function syncWithFirebase(plugin: UnifiedSyncPlugin) {
 			if (!remoteData || localModified > remoteModified) {
 				const content = await vault.cachedRead(file);
 				console.log(`[Unified Sync] Pushing ${file.path} to Firebase...`);
-				const docRef = doc(db, 'vault', file.path.replace(/\//g, '_-_'));
+				const docRef = doc(db, collectionName, file.path.replace(/\//g, '_-_'));
 				await setDoc(docRef, {
 					path: file.path,
 					content: content,

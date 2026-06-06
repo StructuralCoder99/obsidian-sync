@@ -52,7 +52,7 @@ export async function syncWithGit(plugin: UnifiedSyncPlugin) {
 				fs,
 				http,
 				dir,
-				ref: 'main',
+				ref: plugin.settings.gitBranch || 'main',
 				singleBranch: true,
 				author: {
 					name: plugin.settings.gitUsername || 'Unified Sync',
@@ -112,7 +112,7 @@ export async function syncWithGit(plugin: UnifiedSyncPlugin) {
 				http,
 				dir,
 				remote: 'origin',
-				ref: 'main',
+				ref: plugin.settings.gitBranch || 'main',
 				onAuth
 			});
 		} else {
